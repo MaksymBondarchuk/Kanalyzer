@@ -119,6 +119,10 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="BusinessLogic\Lexeme.cs" />
+    <Compile Include="BusinessLogic\LexemeType.cs" />
+    <Compile Include="BusinessLogic\LexicalAnalyzer.cs" />
+    <Compile Include="BusinessLogic\LexicalError.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

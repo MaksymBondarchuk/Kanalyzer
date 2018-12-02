@@ -26,5 +26,10 @@ namespace Kanalyzer
         {
             this.InitializeComponent();
         }
+
+        private void ButtonCompile_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
