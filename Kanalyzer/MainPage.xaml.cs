@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Kanalyzer.BusinessLogic;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -22,6 +23,8 @@ namespace Kanalyzer
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        //private readonly LexicalAnalyzer _lexicalAnalyzer = new LexicalAnalyzer();
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -29,7 +32,9 @@ namespace Kanalyzer
 
         private void ButtonCompile_Click(object sender, RoutedEventArgs e)
         {
-
+            LexicalAnalyzer lexicalAnalyzer = new LexicalAnalyzer();
+            if (!string.IsNullOrEmpty($"{TextBoxCode.Text}\r"))
+                lexicalAnalyzer.Parse(TextBoxCode.Text);
         }
     }
 }

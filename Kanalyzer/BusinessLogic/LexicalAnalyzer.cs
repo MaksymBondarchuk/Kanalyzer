@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -6,15 +8,15 @@ namespace Kanalyzer.BusinessLogic
 {
     public class LexicalAnalyzer
     {
-        private const char NewLine = '\n';
+        private static readonly string NewLine = Environment.NewLine;
 
         private List<string> PredefinedWords { get; } = new List<string>
         {
             "do", "while", "enddo", "if", "then", "fi", "read", "write", "set"
         };
-        private List<char> Delimiters { get; } = new List<char> { '+', '-', '*', '/', '(', ')', '¶' };
-        private List<char> Operators { get; } = new List<char> { '+', '-', '*', '/', '(', ')' };
-        private List<char> TrimDelimiters { get; } = new List<char> { ' ', '\t', NewLine };
+        private List<string> Delimiters { get; } = new List<string> { "+", "-", "*", "/", "(", ")", "¶" };
+        private List<string> Operators { get; } = new List<string> { "+", "-", "*", "/", "(", ")", "<", ">", "==" };
+        private List<string> TrimDelimiters { get; } = new List<string> { " ", "\r", "\t", NewLine };
 
         public List<Lexeme> Lexemes { get; } = new List<Lexeme>();
         public List<string> Identifiers { get; } = new List<string>();
@@ -23,17 +25,14 @@ namespace Kanalyzer.BusinessLogic
 
         public void Parse(string code)
         {
-            var lineNumber = 0;
+            var lineNumber = 1;
             var lexemeBuilder = new StringBuilder();
-            foreach (char symbol in code)
+            foreach (string symbol in code.Select(c => c.ToString()))
             {
-                if (symbol == NewLine)
+                if (symbol.Equals("\r"))
                     lineNumber++;
 
-                if (TrimDelimiters.Contains(symbol))
-                    continue;
-
-                if (Delimiters.Contains(symbol))
+                if (TrimDelimiters.Contains(symbol) || Delimiters.Contains(symbol))
                 {
                     var lexeme = lexemeBuilder.ToString();
                     LexemeType type = LexemeType.Unknown;
@@ -43,6 +42,8 @@ namespace Kanalyzer.BusinessLogic
                         type = LexemeType.Identifier;
                     else if (IsConstant(lexeme))
                         type = LexemeType.Constant;
+                    else if (Operators.Contains(lexeme))
+                        type = LexemeType.Operator;
                     else if (!string.IsNullOrEmpty(lexeme))
                     {
                         Errors.Add(new LexicalError
@@ -61,18 +62,19 @@ namespace Kanalyzer.BusinessLogic
                             Type = type
                         });
 
-                    Lexemes.Add(new Lexeme
-                    {
-                        Value = symbol.ToString(),
-                        Type = Operators.Contains(symbol)
-                            ? LexemeType.Operator
-                            : LexemeType.Delimiter
-                    });
+                    if (Delimiters.Contains(symbol))
+                        Lexemes.Add(new Lexeme
+                        {
+                            Value = symbol,
+                            Type = LexemeType.Delimiter
+                        });
 
                     lexemeBuilder.Clear();
+                    continue;
                 }
 
-                lexemeBuilder.Append(symbol);
+                if (!TrimDelimiters.Contains(symbol))
+                    lexemeBuilder.Append(symbol);
             }
         }
 
