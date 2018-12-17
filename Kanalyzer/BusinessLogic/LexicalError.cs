@@ -7,7 +7,7 @@
 
         public override string ToString()
         {
-            return $"{Line:-4} {Text}";
+            return $"{Line} {Text}";
         }
     }
 }

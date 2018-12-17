@@ -12,9 +12,9 @@ namespace Kanalyzer.BusinessLogic
 
         private List<string> PredefinedWords { get; } = new List<string>
         {
-            "do", "while", "enddo", "if", "then", "fi", "read", "write", "set"
+            "do", "while", "enddo", "if", "then", "fi", "read", "write", "set", "var"
         };
-        private List<string> Delimiters { get; } = new List<string> { "+", "-", "*", "/", "(", ")", "¶" };
+        private List<string> Delimiters { get; } = new List<string> { "+", "-", "*", "/", "(", ")", "¶", ":" };
         private List<string> Operators { get; } = new List<string> { "+", "-", "*", "/", "(", ")", "<", ">", "==" };
         private List<string> TrimDelimiters { get; } = new List<string> { " ", "\r", "\t", NewLine };
 
@@ -39,7 +39,35 @@ namespace Kanalyzer.BusinessLogic
                     if (PredefinedWords.Contains(lexeme))
                         type = LexemeType.PredefinedWord;
                     else if (IsIdentifier(lexeme))
+                    {
                         type = LexemeType.Identifier;
+
+                        // Duplicated identifier
+                        if (Lexemes.Any() && Lexemes.Last().Value.Equals("var") && Identifiers.Contains(lexeme))
+                        {
+                            Errors.Add(new LexicalError
+                            {
+                                Line = lineNumber,
+                                Text = $"Duplicate declaration of {lexeme} identifier"
+                            });
+                            lexemeBuilder.Clear();
+                            continue;
+                        }
+
+                        // Usage of undeclared identifier
+                        if (Lexemes.Any() && !Lexemes.Last().Value.Equals("var") && !Identifiers.Contains(lexeme))
+                        {
+                            Errors.Add(new LexicalError
+                            {
+                                Line = lineNumber,
+                                Text = $"Usage of undeclared identifier: {lexeme}"
+                            });
+                            lexemeBuilder.Clear();
+                            continue;
+                        }
+
+                        Identifiers.Add(lexeme);
+                    }
                     else if (IsConstant(lexeme))
                         type = LexemeType.Constant;
                     else if (Operators.Contains(lexeme))
@@ -85,7 +113,7 @@ namespace Kanalyzer.BusinessLogic
 
         private bool IsConstant(string lexeme)
         {
-            return Regex.IsMatch(lexeme, "^[0-9]([.,][0-9]{1,8})?$");
+            return Regex.IsMatch(lexeme, "^([0-9])+([.,][0-9]{1,8})?$");
         }
     }
 }
